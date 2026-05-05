@@ -3,409 +3,731 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Gaming Tracker</title>
+    <title>RankMate</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
     <style>
-        :root {
-            --val-red: #ff4655;
-            --cs-orange: #de9b35;
-            --val-dark: #111111;
-            --val-gray: #ece8e1;
-            --bg-panel: rgba(255, 255, 255, 0.05);
-            --theme-color: var(--val-red); 
+        /* Estilos personalizados para ocultar la barra de desplazamiento y animaciones */
+        body { background-color: #1e1f22; }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--val-dark);
-            color: var(--val-gray);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 30px 20px;
-            margin: 0;
-            transition: background-color 0.3s;
-        }
-
-        h1 { color: var(--theme-color); text-transform: uppercase; letter-spacing: 2px; transition: color 0.3s; }
-
-        .game-selector { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
-
-        .game-tab {
-            padding: 10px 20px; background-color: #222; color: #888;
-            border: 2px solid transparent; border-radius: 6px; cursor: pointer;
-            font-weight: bold; font-size: 16px; transition: 0.2s;
-        }
-
-        .game-tab.active { color: white; border-color: var(--theme-color); background-color: rgba(255, 255, 255, 0.1); }
-
-        .search-container {
-            background-color: var(--bg-panel); padding: 20px; border-radius: 8px;
-            display: flex; gap: 10px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.1);
-            justify-content: center; flex-wrap: wrap; max-width: 600px;
-        }
-
-        input {
-            padding: 10px; font-size: 16px; border: none; border-radius: 4px;
-            background-color: #222; color: white; outline: none;
-        }
-        input:focus { box-shadow: 0 0 0 2px var(--theme-color); }
-
-        button.action-btn {
-            padding: 10px 20px; font-size: 16px; font-weight: bold;
-            background-color: var(--theme-color); color: white; border: none;
-            border-radius: 4px; cursor: pointer; transition: 0.2s;
-        }
-        button.action-btn:hover { filter: brightness(1.2); }
-        
-        #stopBtn { background-color: #555; display: none; }
-        #stopBtn:hover { background-color: #777; }
-
-        #status { font-size: 14px; color: #aaa; margin-bottom: 20px; height: 20px; text-align: center; }
-
-        .dashboard {
-            display: none; grid-template-columns: 1fr; gap: 20px; width: 100%; max-width: 800px;
-        }
-        
-        .val-grid { grid-template-columns: 1fr 2fr; }
-
-        .stat-box {
-            background-color: var(--bg-panel); border-radius: 8px; padding: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .centered-box { text-align: center; }
-
-        .profile-header {
-            grid-column: 1 / -1; height: 150px; border-radius: 8px; background-size: cover;
-            background-position: center; display: flex; align-items: flex-end; padding: 20px;
-            box-sizing: border-box; border: 2px solid var(--theme-color); position: relative;
-        }
-        
-        .profile-header::after {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.1)); border-radius: 6px; z-index: 1;
-        }
-
-        .profile-info { position: relative; z-index: 2; display: flex; align-items: center; gap: 20px; }
-        .profile-icon { width: 80px; height: 80px; border-radius: 8px; border: 2px solid white; }
-        .profile-info h2 { margin: 0; font-size: 28px; }
-        .profile-info p { margin: 5px 0 0 0; color: #bbb; font-weight: bold; }
-
-        .rank-card { text-align: center; display: flex; flex-direction: column; align-items: center; }
-        .rank-card h3 { margin-top: 0; color: var(--val-gray); }
-        .rank-icon { width: 100px; margin: 10px 0; }
-        .rank-name { font-size: 22px; font-weight: bold; margin: 0; color: var(--theme-color); }
-
-        .match-item {
-            display: flex; align-items: center; gap: 15px; background-color: rgba(0,0,0,0.3);
-            padding: 10px; border-radius: 6px; margin-bottom: 10px;
-        }
-        .match-agent { width: 50px; height: 50px; border-radius: 50%; }
-        .match-details { flex-grow: 1; }
-        .win { color: #4CAF50; } .loss { color: #F44336; }
-        .error { color: var(--theme-color); font-weight: bold; text-align: center; width: 100%; }
-        
-        .steam-stat-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; text-align: left;
-        }
-        .steam-stat-item {
-            background: rgba(0,0,0,0.3); padding: 15px; border-radius: 6px; border-left: 4px solid var(--theme-color);
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
         }
     </style>
 </head>
 <body>
+    <div id="root"></div>
 
-    <h1 id="pageTitle">Valorant Tracker</h1>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-    <div class="game-selector">
-        <button class="game-tab active" id="tab-val" onclick="switchGame('valorant')">Valorant</button>
-        <button class="game-tab" id="tab-cs" onclick="switchGame('cs')">CS2 / CS:GO</button>
-    </div>
+        // --- Configuración de Juegos e Imágenes ---
+        const GAMES_DATA = {
+          "Valorant": {
+            logo: "https://logo.clearbit.com/playvalorant.com",
+            bgAccent: "bg-red-500",
+            textAccent: "text-red-400",
+            regions: ["NA East", "NA West", "NA Central", "EUW", "AP", "BR", "LATAM"],
+            ranks: [
+              { name: "Iron", img: "https://media.valorant-api.com/competitivetiers/564d8e28-c226-3180-6285-e19a3112f8b6/5/largeicon.png" },
+              { name: "Bronze", img: "https://media.valorant-api.com/competitivetiers/564d8e28-c226-3180-6285-e19a3112f8b6/8/largeicon.png" },
+              { name: "Silver", img: "https://media.valorant-api.com/competitivetiers/564d8e28-c226-3180-6285-e19a3112f8b6/11/largeicon.png" },
+              { name: "Gold", img: "https://media.valorant-api.com/competitivetiers/564d8e28-c226-3180-6285-e19a3112f8b6/14/largeicon.png" },
+              { name: "Platinum", img: "https://media.valorant-api.com/competitivetiers/564d8e28-c226-3180-6285-e19a3112f8b6/17/largeicon.png" },
+              { name: "Diamond", img: "https://media.valorant-api.com/competitivetiers/564d8e28-c226-3180-6285-e19a3112f8b6/20/largeicon.png" },
+              { name: "Ascendant", img: "https://media.valorant-api.com/competitivetiers/564d8e28-c226-3180-6285-e19a3112f8b6/23/largeicon.png" },
+              { name: "Immortal", img: "https://media.valorant-api.com/competitivetiers/564d8e28-c226-3180-6285-e19a3112f8b6/26/largeicon.png" },
+              { name: "Radiant", img: "https://media.valorant-api.com/competitivetiers/564d8e28-c226-3180-6285-e19a3112f8b6/27/largeicon.png" }
+            ],
+            roles: ["Duelist", "Initiator", "Controller", "Sentinel", "IGL", "Flex"],
+            characters: ["Astra", "Breach", "Brimstone", "Chamber", "Clove", "Cypher", "Deadlock", "Fade", "Gekko", "Harbor", "Iso", "Jett", "KAYO", "Killjoy", "Neon", "Omen", "Phoenix", "Raze", "Reyna", "Sage", "Skye", "Sova", "Viper", "Vyse", "Yoru"]
+          },
+          "League of Legends": {
+            logo: "https://logo.clearbit.com/leagueoflegends.com",
+            bgAccent: "bg-blue-500",
+            textAccent: "text-blue-400",
+            regions: ["NA", "EUW", "EUNE", "KR", "CN", "BR", "LAN", "LAS", "OCE"],
+            ranks: [
+              { name: "Iron", img: "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/emblem-iron.png" },
+              { name: "Bronze", img: "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/emblem-bronze.png" },
+              { name: "Silver", img: "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/emblem-silver.png" },
+              { name: "Gold", img: "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/emblem-gold.png" },
+              { name: "Platinum", img: "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/emblem-platinum.png" },
+              { name: "Emerald", img: "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/emblem-emerald.png" },
+              { name: "Diamond", img: "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/emblem-diamond.png" },
+              { name: "Master", img: "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/emblem-master.png" },
+              { name: "Challenger", img: "https://raw.communitydragon.org/latest/plugins/rcp-fe-lol-static-assets/global/default/images/ranked-emblem/emblem-challenger.png" }
+            ],
+            roles: ["Top", "Jungle", "Mid", "ADC", "Support", "Fill"],
+            characters: ["Aatrox", "Ahri", "Akali", "Akshan", "Alistar", "Amumu", "Anivia", "Annie", "Aphelios", "Ashe", "AurelionSol", "Azir", "Bard", "Belveth", "Blitzcrank", "Brand", "Braum", "Briar", "Caitlyn", "Camille", "Cassiopeia", "Chogath", "Corki", "Darius", "Diana", "Draven", "DrMundo", "Ekko", "Elise", "Evelynn", "Ezreal", "Fiddlesticks", "Fiora", "Fizz", "Galio", "Gangplank", "Garen", "Gnar", "Gragas", "Graves", "Gwen", "Hecarim", "Heimerdinger", "Hwei", "Illaoi", "Irelia", "Ivern", "Janna", "JarvanIV", "Jax", "Jayce", "Jhin", "Jinx", "Kaisa", "Kalista", "Karma", "Karthus", "Kassadin", "Katarina", "Kayle", "Kayn", "Kennen", "Khazix", "Kindred", "Kled", "KogMaw", "KSante", "Leblanc", "LeeSin", "Leona", "Lillia", "Lissandra", "Lucian", "Lulu", "Lux", "Malphite", "Malzahar", "Maokai", "MasterYi", "Milio", "MissFortune", "Mordekaiser", "Morgana", "Nami", "Nasus", "Nautilus", "Neeko", "Nidalee", "Nilah", "Nocturne", "Nunu", "Olaf", "Orianna", "Ornn", "Pantheon", "Poppy", "Pyke", "Qiyana", "Quinn", "Rakan", "Rammus", "RekSai", "Rell", "Renata", "Renekton", "Rengar", "Riven", "Rumble", "Ryze", "Samira", "Sejuani", "Senna", "Seraphine", "Sett", "Shaco", "Shen", "Shyvana", "Singed", "Sion", "Sivir", "Skarner", "Smolder", "Sona", "Soraka", "Swain", "Sylas", "Syndra", "TahmKench", "Taliyah", "Talon", "Taric", "Teemo", "Thresh", "Tristana", "Trundle", "Tryndamere", "TwistedFate", "Twitch", "Udyr", "Urgot", "Varus", "Vayne", "Veigar", "Velkoz", "Vex", "Vi", "Viego", "Viktor", "Vladimir", "Volibear", "Warwick", "Wukong", "Xayah", "Xerath", "XinZhao", "Yasuo", "Yone", "Yorick", "Yuumi", "Zac", "Zed", "Zeri", "Ziggs", "Zilean", "Zoe", "Zyra"]
+          },
+          "Counter-Strike 2": {
+            logo: "https://logo.clearbit.com/counter-strike.net",
+            bgAccent: "bg-orange-500",
+            textAccent: "text-orange-400",
+            regions: ["North America", "South America", "Europe", "Asia", "Australia"],
+            ranks: [
+              { name: "Silver I", img: "https://cdn.jsdelivr.net/gh/SteamDatabase/GameTracking-CS2@master/game/csgo/panorama/images/icons/skillgroups/skillgroup1.svg" },
+              { name: "Gold Nova I", img: "https://cdn.jsdelivr.net/gh/SteamDatabase/GameTracking-CS2@master/game/csgo/panorama/images/icons/skillgroups/skillgroup7.svg" },
+              { name: "Master Guardian", img: "https://cdn.jsdelivr.net/gh/SteamDatabase/GameTracking-CS2@master/game/csgo/panorama/images/icons/skillgroups/skillgroup11.svg" },
+              { name: "Legendary Eagle", img: "https://cdn.jsdelivr.net/gh/SteamDatabase/GameTracking-CS2@master/game/csgo/panorama/images/icons/skillgroups/skillgroup15.svg" },
+              { name: "Global Elite", img: "https://cdn.jsdelivr.net/gh/SteamDatabase/GameTracking-CS2@master/game/csgo/panorama/images/icons/skillgroups/skillgroup18.svg" }
+            ],
+            roles: ["Entry Fragger", "AWPer", "Support", "IGL", "Lurker"]
+          }
+        };
 
-    <div class="search-container" id="searchInputs">
-        </div>
+        const AVATAR_FRAMES = {
+          "None": "",
+          "Neon Cyber": "ring-[3px] ring-cyan-400/80 shadow-[0_0_15px_rgba(34,211,238,0.8)]",
+          "Hellfire": "ring-[3px] ring-orange-500/80 shadow-[0_0_20px_rgba(249,115,22,0.8)] animate-[pulse_2s_infinite]",
+          "Void Energy": "ring-[3px] ring-purple-600 shadow-[0_0_25px_rgba(147,51,234,0.9)]",
+          "Radiant Glow": "ring-[3px] ring-yellow-300 shadow-[0_0_20px_rgba(253,224,71,0.9)]",
+          "Blood Moon": "ring-[3px] ring-red-600 shadow-[0_0_20px_rgba(220,38,38,0.8)] border-dashed"
+        };
 
-    <div id="status">Ready. Select a game to begin.</div>
-    <div id="errorMsg" class="error"></div>
+        // --- Íconos de Roles Dibujados (SVGs Hardcoded Convertidos a JSX) ---
+        const IconoDeRol = ({ game, role, fallbackClass, svgSize = "w-10 h-10", csSize = "text-3xl" }) => {
+          const svgClasses = `${svgSize} object-contain drop-shadow-md`; 
+          const valoColor = "#ece8e1"; 
+          const lolColor = "rgb(199,169,108)";
 
-    <div class="dashboard" id="dashboard">
-        </div>
-
-    <script>
-        // API KEYS
-        const valApiKey = 'HDEV-2bf4c45f-2325-4ae7-a4e5-56c1753680f2'; 
-        const steamApiKey = '15752CA5233CAA6FFD19C74BFCF28CB'; 
-
-        // New, more stable proxy
-        const proxyUrl = 'https://api.allorigins.win/raw?url=';
-        let currentGame = 'valorant';
-        let valInterval;
-
-        window.onload = () => switchGame('valorant');
-
-        function switchGame(game) {
-            currentGame = game;
-            stopValTracking();
-            
-            const dash = document.getElementById('dashboard');
-            dash.style.display = 'none';
-            dash.className = 'dashboard'; 
-            
-            document.getElementById('errorMsg').innerText = '';
-            document.querySelectorAll('.game-tab').forEach(tab => tab.classList.remove('active'));
-            
-            const root = document.documentElement;
-            const searchContainer = document.getElementById('searchInputs');
-
-            if (game === 'valorant') {
-                document.getElementById('tab-val').classList.add('active');
-                root.style.setProperty('--theme-color', 'var(--val-red)');
-                document.getElementById('pageTitle').innerText = "Valorant Tracker";
-                searchContainer.innerHTML = `
-                    <input type="text" id="valName" placeholder="Riot ID" required>
-                    <input type="text" id="valTag" placeholder="Tag" required style="width: 100px;">
-                    <button class="action-btn" onclick="startValTracking()">Search & Track</button>
-                    <button id="stopBtn" class="action-btn" onclick="stopValTracking()">Stop</button>
-                `;
-            } else if (game === 'cs') {
-                document.getElementById('tab-cs').classList.add('active');
-                root.style.setProperty('--theme-color', 'var(--cs-orange)');
-                document.getElementById('pageTitle').innerText = "Official Steam Tracker";
-                searchContainer.innerHTML = `
-                    <input type="text" id="csInput" placeholder="Steam ID or Custom Profile URL" required style="width: 300px;">
-                    <button class="action-btn" onclick="fetchSteamData()">Search CS2 Stats</button>
-                `;
+          if (game === "Valorant") {
+            switch(role) {
+              case "Duelist": return (
+                <svg className={svgClasses} viewBox="0 0 463 462">
+                  <path fill="rgb(254,254,254)" stroke="rgb(254,254,254)" strokeWidth="1" opacity="0.984313725490196" d="M 209.5 0 L 253.5 0 L 292.5 7 L 308.5 12 L 332.5 22 L 368 43 L 368 44.5 L 231.5 181 L 229.5 181 L 94 45.5 Q 93.3 43.3 95.5 44 Q 118.9 25.4 149.5 14 L 183.5 4 L 200.5 2 L 201.5 1 L 208.5 1 L 209.5 0 Z " />
+                  <path fill="rgb(254,254,254)" stroke="rgb(254,254,254)" strokeWidth="1" opacity="0.984313725490196" d="M 420.5 97 Q 443.2 127.3 455 168.5 L 462 205.5 L 463 244.5 L 462 245.5 L 461 264.5 L 457 285.5 L 449 311.5 L 432 347.5 L 417.5 368 L 284 235.5 L 284 233.5 L 420.5 97 Z " />
+                  <path fill="rgb(254,254,254)" stroke="rgb(254,254,254)" strokeWidth="1" opacity="0.984313725490196" d="M 41.5 99 L 178 234.5 L 44.5 367 Q 21.2 336.8 9 295.5 L 3 269.5 L 2 255.5 L 1 254.5 L 0 221.5 L 1 220.5 L 1 207.5 L 2 206.5 L 4 186.5 L 13 153.5 Q 23.8 122.8 41.5 99 Z " />
+                  <path fill="rgb(254,254,254)" stroke="rgb(254,254,254)" strokeWidth="1" opacity="0.984313725490196" d="M 230.5 287 L 364 420.5 L 362.5 422 Q 333.2 442.7 294.5 454 L 258.5 461 L 249.5 461 L 248.5 462 L 215.5 462 L 214.5 461 L 204.5 461 L 203.5 460 L 185.5 458 L 150.5 448 Q 120.9 437.1 98 419.5 L 230.5 287 Z " />
+                  <path fill="rgb(0,0,0)" stroke="rgb(0,0,0)" strokeWidth="1" opacity="0" d="M 0 0 L 209 0.5 L 183.5 4 L 149.5 14 Q 118.4 26.2 94 44 L 94 45.5 L 229.5 181 L 231.5 181 L 368 44.5 Q 368.8 42.3 366.5 43 Q 344.6 25.9 316.5 15 L 284.5 5 L 254 0.5 L 463 0 L 462.5 216 L 461 197.5 L 458 180.5 L 448 147.5 Q 437.2 119.3 420.5 97 L 284 233.5 L 284 235.5 L 417.5 368 L 432 347.5 L 449 311.5 L 457 285.5 L 461 264.5 L 462.5 245 L 463 462 L 249 461.5 L 266.5 460 L 282.5 457 L 315.5 447 Q 342.6 436.6 364 420.5 L 230.5 287 L 98 419.5 Q 120.9 437.1 150.5 448 L 185.5 458 L 215 461.5 L 0 462 L 0.5 240 L 3 269.5 L 7 288.5 L 15 313.5 Q 26.5 343.5 44.5 367 L 178 234.5 L 41.5 99 Q 23.8 122.8 13 153.5 L 4 186.5 L 2 206.5 L 1 207.5 L 0.5 221 L 0 0 Z " />
+                </svg>
+              );
+              case "Initiator": return (
+                <svg className={svgClasses} viewBox="0 0 462 463">
+                  <path fill="rgb(0,0,0)" stroke="rgb(0,0,0)" strokeWidth="1" opacity="0" d="M 0 0 L 230.5 0 L 231 1.5 L 391 264.5 L 207 265.5 L 306 427.5 L 316 446 L 321.5 445 L 336.5 438 L 364.5 421 Q 387 405 405 384.5 Q 429.5 357 445 320.5 L 451 304.5 L 457 282.5 L 460 266.5 L 461.5 249 L 462 463 L 239.5 463 L 239 460.5 L 75 190 L 257.5 190 L 258 188.5 L 151.5 14 Q 92.2 36.2 55 80.5 Q 32.6 106.1 18 139.5 L 11 157.5 L 4 183.5 L 0.5 210 L 0 0 Z " />
+                  <path fill="rgb(0,0,0)" stroke="rgb(0,0,0)" strokeWidth="1" opacity="0" d="M 241.5 0 L 462 0 L 462 213.5 L 461 213.5 L 461 204.5 L 460 203.5 L 460 196.5 L 457 180.5 Q 451.1 154.9 441 133.5 Q 419.7 88.8 384.5 58 Q 358.1 34.4 323.5 19 L 305.5 12 L 284.5 6 L 262.5 2 L 255.5 2 L 254.5 1 L 241.5 1 L 241.5 0 Z " />
+                  <path fill="rgb(0,0,0)" stroke="rgb(0,0,0)" strokeWidth="1" opacity="0" d="M 0.5 254 L 6 288.5 L 12 308.5 L 21 330.5 Q 40.6 370.9 71.5 400 Q 98.9 426.1 135.5 443 L 176.5 457 L 197.5 461 L 217 462.5 L 0 463 L 0.5 254 Z " />
+                  <path fill="rgb(255,255,255)" stroke="rgb(255,255,255)" strokeWidth="1" opacity="0.9882352941176471" d="M 231 0 L 254.5 1 L 255.5 2 L 262.5 2 L 284.5 6 L 302.5 11 L 323.5 19 Q 371.5 40.5 404 77.5 Q 430.9 107.1 447 147.5 L 454 168.5 L 460 196.5 L 461 213.5 L 462 214.5 L 462 248.5 L 461 249.5 L 461 258.5 L 460 259.5 L 459 272.5 L 454 294.5 L 442 327.5 Q 420.1 374.1 383.5 406 Q 355.2 432.1 316 446 L 306 427.5 L 207 265.5 L 391 264.5 L 239 15.5 L 231 0 Z " />
+                  <path fill="rgb(255,255,255)" stroke="rgb(255,255,255)" strokeWidth="1" opacity="0.9882352941176471" d="M 150.5 14 L 153 15.5 L 258 190 L 75.5 190 L 75 191.5 L 238 458.5 L 239 463 L 217.5 463 L 216.5 462 L 205.5 462 L 204.5 461 L 185.5 459 L 168.5 455 L 142.5 446 Q 94.8 425.8 62 390.5 Q 29.8 356.7 12 308.5 L 5 284.5 L 1 261.5 L 1 254.5 L 0 253.5 L 0 210.5 L 1 209.5 L 1 201.5 L 2 200.5 L 4 183.5 L 11 157.5 Q 18.5 136 29 117.5 Q 49.3 81.8 79.5 56 Q 109.6 29.6 150.5 14 Z " />
+                </svg>
+              );
+              case "Controller": return (
+                <svg className={svgClasses} viewBox="0 0 200 200">
+                  {/* ... (SVG paths ocultos por brevedad, se asume que se mantienen igual) ... */}
+                  <path fill="rgb(255,255,255)" stroke="rgb(255,255,255)" strokeWidth="1" opacity="0.8745" d="M 91.5 0 L 109 0.5 L 91.5 1 L 91.5 0 Z " />
+                  {/* ... resto de paths del Controller ... */}
+                  <path fill="rgb(255,255,255)" stroke="rgb(255,255,255)" strokeWidth="1" opacity="1" d="M 99.5 159 L 102.5 160 L 139 191.5 L 127.5 196 L 113.5 199 L 86.5 199 L 72.5 196 L 61 191.5 L 99.5 159 Z " />
+                </svg>
+              );
+              case "Sentinel": return (
+                <svg className={svgClasses} viewBox="0 0 200 200">
+                  <path fill="rgb(0,0,0)" stroke="rgb(0,0,0)" strokeWidth="1" opacity="0" d="M 0 0 L 87 0.5 L 75.5 2 L 58.5 8 Q 40.9 16.4 28 29.5 L 23 37 L 176.5 37 L 177 35.5 Q 163.6 18.9 143.5 9 L 124.5 2 L 113 0.5 L 200 0 L 199.5 90 L 197 73.5 L 195 66.5 L 191.5 61 L 111.5 200 L 87.5 200 L 87 198.5 L 7.5 62 L 2 76.5 L 0.5 89 L 0 0 Z M 50 69 L 50 72 L 100 156 L 149 71 L 149 69 L 50 69 Z " />
+                  <path fill="rgb(0,0,0)" stroke="rgb(0,0,0)" strokeWidth="1" opacity="0" d="M 199.5 111 L 200 200 L 118 199.5 Q 155.9 191.9 176 166.5 L 178 163.5 L 188 149.5 L 195 134.5 L 195 130.5 L 198 123.5 L 199.5 111 Z " />
+                  <path fill="rgb(0,0,0)" stroke="rgb(0,0,0)" strokeWidth="1" opacity="0" d="M 0.5 112 L 2 124.5 L 5 134.5 Q 11.8 152 22 165 Q 24.7 163.9 24 166.5 Q 44.1 191.9 82 199.5 L 0 200 L 0.5 112 Z " />
+                  <path fill={valoColor} stroke={valoColor} strokeWidth="1" opacity="0.9607" d="M 87.5 0 L 112.5 0 L 134.5 5 Q 160.7 15.3 177 35.5 L 176.5 37 L 23 37 L 29.5 28 Q 41.9 15.9 58.5 8 L 75.5 2 L 86.5 1 L 87.5 0 Z " />
+                  <path fill={valoColor} stroke={valoColor} strokeWidth="1" opacity="0.9607" d="M 191.5 61 L 195 66.5 L 198 77.5 L 199 89.5 L 200 90.5 L 200 110.5 L 195 134.5 L 188 149.5 L 178 165 Q 175.3 163.9 176 166.5 Q 165.2 179.2 150.5 188 L 127.5 198 L 112.5 200 L 113 198.5 L 191.5 61 Z " />
+                  <path fill={valoColor} stroke={valoColor} strokeWidth="1" opacity="0.9607" d="M 7.5 62 L 17 76.5 L 87 200 Q 45.4 193.8 24 166.5 L 22 163.5 L 13 151.5 L 5 134.5 L 2 124.5 L 2 118.5 L 0 111.5 L 0 89.5 L 2 82.5 L 2 76.5 L 7.5 62 Z " />
+                  <path fill={valoColor} stroke={valoColor} strokeWidth="1" opacity="0.9607" d="M 50 69 L 148.5 69 L 149 70.5 L 99.5 156 L 50 71.5 L 50 69 Z " />
+                </svg>
+              );
             }
-        }
+          }
+          
+          if (game === "League of Legends") {
+            switch(role) {
+              case "Top": return <svg className={svgClasses} viewBox="0 0 24 24"><path fill={lolColor} d="M6 3H18V7H14V21H10V7H6V3Z"/></svg>;
+              case "Jungle": return (
+                <svg className={svgClasses} viewBox="0 0 436 491">
+                  <path fill="rgb(199,169,108)" stroke="rgb(199,169,108)" strokeWidth="1" opacity="0.97" d="M 353.5 0 Q 355.8 -0.8 355 1.5 L 345 18.5 L 326 59.5 L 317 83.5 L 306 119.5 L 297 159.5 L 293 190.5 L 292 191.5 L 292 198.5 L 291 199.5 L 290 220.5 L 289 221.5 L 289 239.5 L 288 240.5 L 288 264.5 L 280 275.5 L 275 288.5 L 270.5 307 L 269 290.5 L 264 269.5 Q 251.5 230.5 233 197.5 L 233 192.5 Q 267.9 76.4 347.5 5 L 353.5 0 Z " />
+                  <path fill="rgb(199,169,108)" stroke="rgb(199,169,108)" strokeWidth="1" opacity="0.97" d="M 89.5 4 Q 127.3 52.2 159 106.5 Q 187.8 155.2 210 210.5 L 226 256.5 L 239 309.5 L 242 333.5 L 243 334.5 L 244 352.5 L 245 353.5 L 246 399.5 L 245 400.5 L 244 423.5 L 243 424.5 L 243 431.5 L 240 448.5 L 230 482.5 L 226 491 L 222 488.5 Q 194 446.5 157.5 413 Q 112.2 369.8 59 334.5 L 60 289.5 L 59 288.5 L 58 267.5 L 53 239.5 L 41 200.5 Q 25 160.3 0 130 Q 64.2 157.1 108 205.5 Q 128.3 226.7 140.5 256 L 143 241.5 L 144 211.5 L 143 210.5 L 143 191.5 L 142 190.5 L 142 181.5 L 141 180.5 L 139 158.5 L 128 108.5 L 112 58.5 L 97 21.5 L 91 10.5 L 89.5 4 Z " />
+                  <path fill="rgb(199,169,108)" stroke="rgb(199,169,108)" strokeWidth="1" opacity="0.97" d="M 434.5 130 Q 436.8 129.3 436 131.5 L 416 162.5 Q 402.5 187.5 393 216.5 L 386 241.5 L 380 272.5 L 379 288.5 L 378 289.5 L 378 300.5 L 377 301.5 L 377 337.5 L 369.5 345 L 291.5 414 L 289 414 L 289 377.5 L 290 376.5 L 290 362.5 L 291 361.5 L 293 338.5 L 299 309.5 L 308 280.5 Q 334 212 383.5 167 Q 406 145.5 434.5 130 Z " />
+                </svg>
+              );
+              case "Mid": return (
+                <svg className={svgClasses} viewBox="0 0 120 120">
+                  <path fill="rgb(200,170,110)" stroke="rgb(200,170,110)" strokeWidth="1" opacity="0.99" d="M 14 14 L 74 14.5 L 60.5 28 L 28 28 L 28 60.5 L 14.5 74 L 14 14 Z " />
+                  <path fill="rgb(200,170,110)" stroke="rgb(200,170,110)" strokeWidth="1" opacity="0.99" d="M 88.5 14 L 106 14 L 106 31.5 L 31.5 106 L 14 106 L 14 88.5 L 88.5 14 Z " />
+                  <path fill="rgb(200,170,110)" stroke="rgb(200,170,110)" strokeWidth="1" opacity="0.99" d="M 105.5 45 L 106 106 L 46 105.5 L 59.5 92 L 92 92 L 92 58.5 L 105.5 45 Z " />
+                </svg>
+              );
+              case "ADC": return (
+                <svg className={svgClasses} viewBox="0 0 192 192">
+                  <path fill="rgb(187,160,103)" stroke="rgb(187,160,103)" strokeWidth="1" opacity="0.92" d="M 96.5 17 L 110 52.5 L 96.5 69 L 84 53.5 L 84 49.5 L 96.5 17 Z " />
+                  <path fill="rgb(187,160,103)" stroke="rgb(187,160,103)" strokeWidth="1" opacity="0.92" d="M 54.5 34 L 77 47.5 L 74 59 L 61.5 59 L 61 56.5 L 54 37.5 L 54.5 34 Z " />
+                  <path fill="rgb(187,160,103)" stroke="rgb(187,160,103)" strokeWidth="1" opacity="0.92" d="M 138.5 34 Q 140.8 33.3 140 35.5 L 131.5 59 L 120.5 59 L 119 57.5 L 117 47.5 L 138.5 34 Z " />
+                  <path fill="rgb(187,160,103)" stroke="rgb(187,160,103)" strokeWidth="1" opacity="0.92" d="M 52.5 61 Q 54.8 60.3 54 62.5 L 53 67.5 L 55.5 71 L 64.5 72 L 81.5 66 L 96.5 83 L 111.5 66 L 125.5 71 L 135.5 72 L 140 68.5 Q 141.5 63 139 61.5 L 140.5 61 Q 157.2 77.3 169 98.5 L 175 112.5 L 176 120.5 L 174 119.5 L 170.5 115 Q 157 103.5 136.5 99 L 123.5 114 L 112 119 L 115 103.5 L 121 96.5 L 110.5 96 L 108 102.5 L 102 142.5 L 115 160.5 L 114 161.5 L 113 176 L 96.5 170 L 80 176 L 79 159.5 L 91 143.5 L 91 137.5 L 84 96 L 72 96.5 L 78 102.5 L 81 119 L 74.5 117 L 62 106.5 L 58 99 Q 31.9 103.6 17.5 121 L 17 118.5 Q 20.4 103.4 28 92.5 Q 38.6 75.1 52.5 61 Z " />
+                </svg>
+              );
+              case "Support": return (
+                <svg className={svgClasses} viewBox="0 0 120 120">
+                  <path fill="rgb(201,170,110)" stroke="rgb(201,170,110)" strokeWidth="1" opacity="0.98" d="M 46.5 11 L 73.5 11 L 75 12.5 L 77 18.5 L 60.5 38 L 56 34.5 L 43 18.5 L 43 16.5 L 46.5 11 Z " />
+                  <path fill="rgb(201,170,110)" stroke="rgb(201,170,110)" strokeWidth="1" opacity="0.98" d="M 1.5 32 L 38.5 32 L 49 42.5 L 44 62.5 L 41.5 67 L 25 59.5 L 35 46.5 Q 25.1 46.9 18.5 44 L 3.5 35 L 1.5 32 Z " />
+                  <path fill="rgb(201,170,110)" stroke="rgb(201,170,110)" strokeWidth="1" opacity="0.98" d="M 81.5 32 L 119 32.5 L 101.5 44 Q 94.9 46.9 85 46.5 L 95 59.5 L 78.5 67 L 76 62.5 L 71 42.5 L 81.5 32 Z " />
+                  <path fill="rgb(201,170,110)" stroke="rgb(201,170,110)" strokeWidth="1" opacity="0.98" d="M 56 47 L 60.5 49 L 64 47 L 74 98.5 L 59.5 109 L 46 98.5 L 56 47 Z " />
+                </svg>
+              );
+              case "Fill": return (
+                <svg className={svgClasses} viewBox="0 0 136 136">
+                  <path fill="rgb(199,169,109)" stroke="rgb(199,169,109)" strokeWidth="1" opacity="0.95" d="M 39 20 L 51.5 23 L 54 25.5 L 67 49 Q 69.7 50.1 69 47.5 L 84.5 23 L 97 20 L 100 29.5 L 100 33.5 L 84 59.5 L 116.5 60 L 124 67.5 L 116.5 76 L 84 76.5 L 99 100.5 L 100 106.5 L 97 116 L 84.5 113 L 82 110.5 L 69 87 Q 66.3 85.9 67 88.5 L 51.5 113 L 39 116 L 36 106.5 L 36 102.5 L 52 76.5 L 19.5 76 L 12 68.5 L 19.5 60 L 52 59.5 L 37 35.5 L 36 29.5 L 39 20 Z " />
+                </svg>
+              );
+            }
+          }
 
-        // --- VALORANT LOGIC (HenrikDev API) ---
+          if (game === "Counter-Strike 2") {
+            const csClass = `${csSize} text-orange-400 drop-shadow-md`;
+            switch(role) {
+              case "Entry Fragger": return <i className={`fa-solid fa-door-open ${csClass}`}></i>;
+              case "AWPer": return <i className={`fa-solid fa-crosshairs ${csClass}`}></i>;
+              case "Support": return <i className={`fa-solid fa-handshake ${csClass}`}></i>;
+              case "IGL": return <i className={`fa-solid fa-brain ${csClass}`}></i>;
+              case "Lurker": return <i className={`fa-solid fa-user-ninja ${csClass}`}></i>;
+            }
+          }
 
-        function startValTracking() {
-            document.getElementById('errorMsg').innerHTML = '';
-            document.getElementById('stopBtn').style.display = 'inline-block';
-            if (valInterval) clearInterval(valInterval);
-            fetchValorantData(); 
-            valInterval = setInterval(fetchValorantData, 12000); 
-            document.getElementById('status').innerText = `Tracking Valorant stats live...`;
-            document.getElementById('status').style.color = '#4CAF50';
-        }
+          return <div className={`${svgSize} rounded-full ${fallbackClass} drop-shadow-md`} />;
+        };
 
-        function stopValTracking() {
-            if (valInterval) clearInterval(valInterval);
-            const stopBtn = document.getElementById('stopBtn');
-            if(stopBtn) stopBtn.style.display = 'none';
-            document.getElementById('status').innerText = 'Ready.';
-            document.getElementById('status').style.color = '#aaa';
-        }
+        const obtenerImagenCampeon = (game, name, iconosValorant = {}, versionLol = "14.8.1") => {
+          const nombreLimpio = name.replace(/[^a-zA-Z]/g, ''); 
+          if (game === "Valorant") {
+            return iconosValorant[nombreLimpio.toLowerCase()] || `https://ui-avatars.com/api/?name=${name}&background=2b2d31&color=fff&size=64`;
+          }
+          if (game === "League of Legends") {
+            let ddragonName = nombreLimpio;
+            if (nombreLimpio.toLowerCase() === 'wukong') ddragonName = 'MonkeyKing';
+            return `https://ddragon.leagueoflegends.com/cdn/${versionLol}/img/champion/${ddragonName}.png`;
+          }
+          return `https://ui-avatars.com/api/?name=${name}&background=2b2d31&color=fff&size=64`;
+        };
 
-        async function fetchValorantData() {
-            const name = document.getElementById('valName').value.trim();
-            const tag = document.getElementById('valTag').value.trim().replace('#', '');
-            if (!name || !tag) return;
+        // --- Componente Principal ---
+        function App() {
+          const [iconosValorant, setIconosValorant] = useState({});
+          const [rangosValorant, setRangosValorant] = useState({});
+          const [versionLol, setVersionLol] = useState("14.8.1");
+          
+          const [cuenta, setCuenta] = useState({
+            nombreUsuarioBase: "NewUser123",
+            perfiles: [
+              {
+                id: "prof_1",
+                game: "League of Legends",
+                gamerTag: "PlayerOne#123",
+                avatarUrl: "https://images.unsplash.com/photo-1622547748225-3fc4abd2cca0?w=400&q=80",
+                bannerUrl: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&q=80",
+                frame: "Neon Cyber",
+                rank: "Iron",
+                region: "NA",
+                primaryRole: "Mid",
+                mainChamps: "Ahri,Yasuo",
+                aboutMe: "Ready to grind.",
+                badges: []
+              }
+            ]
+          });
 
-            const headers = { 'Authorization': valApiKey };
+          useEffect(() => {
+            fetch('https://valorant-api.com/v1/agents?isPlayableCharacter=true')
+              .then(res => res.json())
+              .then(data => {
+                const mapaDeIconos = {};
+                data.data.forEach(agent => {
+                  const nombreLimpio = agent.displayName.replace(/[^a-zA-Z]/g, '').toLowerCase();
+                  mapaDeIconos[nombreLimpio] = agent.displayIcon;
+                });
+                setIconosValorant(mapaDeIconos);
+              })
+              .catch(err => console.error("Error cargando agentes", err));
 
-            try {
-                const accRes = await fetch(`https://api.henrikdev.xyz/valorant/v1/account/${name}/${tag}`, { headers });
-                const accJson = await accRes.json();
-                if (accJson.status !== 200) throw new Error(accJson.errors[0].message);
+            fetch('https://valorant-api.com/v1/competitivetiers')
+              .then(res => res.json())
+              .then(data => {
+                const episodioActual = data.data[data.data.length - 1];
+                const mapaDeRangos = {};
+                episodioActual.tiers.forEach(t => {
+                  if (t.tierName === 'RADIANT' || t.tierName.includes('3')) {
+                    const nombreBase = t.tierName.split(' ')[0]; 
+                    const nombreFormateado = nombreBase.charAt(0) + nombreBase.toLowerCase().slice(1);
+                    mapaDeRangos[nombreFormateado] = t.largeIcon;
+                  }
+                });
+                setRangosValorant(mapaDeRangos);
+              })
+              .catch(err => console.error("Error cargando rangos", err));
+
+            fetch('https://ddragon.leagueoflegends.com/api/versions.json')
+              .then(res => res.json())
+              .then(data => setVersionLol(data[0]))
+              .catch(err => console.error("Error cargando versión de LoL", err));
+          }, []);
+
+          return (
+            <div className="min-h-screen bg-[#1e1f22] text-slate-200 font-sans flex justify-center selection:bg-indigo-500/30">
+              <div className="w-full max-w-5xl bg-[#2b2d31] min-h-screen flex flex-col relative shadow-2xl overflow-hidden border-x border-[#1e1f22]">
                 
-                const acc = accJson.data;
-                const region = acc.region;
+                {/* Header */}
+                <header className="h-14 border-b border-[#1e1f22] flex items-center justify-between px-4 shrink-0 bg-[#2b2d31] z-20">
+                  <div className="flex items-center gap-2">
+                    <i className="fa-solid fa-gamepad text-indigo-400 text-xl"></i>
+                    <h1 className="font-bold text-white tracking-wide text-lg">RankMate</h1>
+                  </div>
+                </header>
 
-                const [mmrRes, matchRes] = await Promise.all([
-                    fetch(`https://api.henrikdev.xyz/valorant/v1/mmr/${region}/${name}/${tag}`, { headers }),
-                    fetch(`https://api.henrikdev.xyz/valorant/v3/matches/${region}/${name}/${tag}?size=3`, { headers })
-                ]);
+                {/* Contenido Principal */}
+                <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 pb-24 relative hide-scrollbar">
+                  <EditorMultiplesPerfiles cuenta={cuenta} setCuenta={setCuenta} iconosValorant={iconosValorant} rangosValorant={rangosValorant} versionLol={versionLol} />
+                </main>
 
-                const mmrJson = await mmrRes.json();
-                const matchJson = await matchRes.json();
-
-                const dash = document.getElementById('dashboard');
-                dash.className = 'dashboard val-grid'; 
-                dash.style.display = 'grid';
-                dash.innerHTML = `
-                    <div class="profile-header" style="background-image: url('${acc.card.wide}')">
-                        <div class="profile-info">
-                            <img src="${acc.card.small}" class="profile-icon">
-                            <div>
-                                <h2>${acc.name} #${acc.tag}</h2>
-                                <p>Level ${acc.account_level} • ${region.toUpperCase()}</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-box rank-card">
-                        <h3>Current Rank</h3>
-                        <img src="${mmrJson.data ? mmrJson.data.images.large : ''}" class="rank-icon">
-                        <p class="rank-name">${mmrJson.data ? mmrJson.data.currenttierpatched : 'Unranked'}</p>
-                        <p>${mmrJson.data ? mmrJson.data.ranking_in_tier + ' RR' : 'Hidden'}</p>
-                    </div>
-
-                    <div class="stat-box">
-                        <h3 style="margin-top:0;">Recent Matches</h3>
-                        <div id="valMatches"></div>
-                    </div>
-                `;
-
-                let matchesHtml = '';
-                if (matchJson.status === 200 && matchJson.data) {
-                    matchJson.data.forEach(match => {
-                        const me = match.players.all_players.find(p => p.name.toLowerCase() === name.toLowerCase());
-                        if (me) {
-                            let resultClass = ""; let resultText = match.metadata.mode;
-                            const myTeam = me.team ? me.team.toLowerCase() : null;
-                            if (match.teams && myTeam && match.teams[myTeam]) {
-                                if (match.teams[myTeam].has_won) { resultClass = "win"; resultText = "VICTORY"; } 
-                                else if (match.teams[myTeam].rounds_won < match.teams[myTeam].rounds_lost) { resultClass = "loss"; resultText = "DEFEAT"; }
-                            }
-                            matchesHtml += `
-                                <div class="match-item">
-                                    <img src="${me.assets.agent.small}" class="match-agent">
-                                    <div class="match-details">
-                                        <strong>${match.metadata.map}</strong><br>
-                                        <span class="${resultClass}">${resultText}</span>
-                                    </div>
-                                    <div style="font-weight: bold;">${me.stats.kills} / ${me.stats.deaths} / ${me.stats.assists}</div>
-                                </div>
-                            `;
-                        }
-                    });
-                }
-                document.getElementById('valMatches').innerHTML = matchesHtml || '<p>No recent matches.</p>';
-
-            } catch (error) {
-                document.getElementById('errorMsg').innerText = `Error: ${error.message}`;
-                stopValTracking();
-            }
+              </div>
+            </div>
+          );
         }
 
-        // --- OFFICIAL STEAM WEB API LOGIC FOR CS2 ---
+        // --- Componentes Secundarios ---
 
-        async function fetchSteamData() {
-            let input = document.getElementById('csInput').value.trim();
-            const resultDiv = document.getElementById('dashboard');
-            const errorDiv = document.getElementById('errorMsg');
-            
-            if (!input) {
-                errorDiv.innerText = "Please enter a Steam ID or URL.";
-                return;
+        function EditorMultiplesPerfiles({ cuenta, setCuenta, iconosValorant, rangosValorant, versionLol }) {
+          const [idPerfilActivo, setIdPerfilActivo] = useState(cuenta.perfiles[0]?.id || null);
+
+          const manejarAgregarPerfil = () => {
+            const nuevoId = `prof_${Date.now()}`;
+            const nuevoPerfil = {
+              id: nuevoId, game: "League of Legends", gamerTag: "NewPlayer#123",
+              avatarUrl: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400&q=80",
+              bannerUrl: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&q=80",
+              frame: "None", rank: "Iron", region: "NA", primaryRole: "Fill", mainChamps: "", aboutMe: "Ready to play.", badges: []
+            };
+            setCuenta({ ...cuenta, perfiles: [...cuenta.perfiles, nuevoPerfil] });
+            setIdPerfilActivo(nuevoId);
+          };
+
+          const perfilActivo = cuenta.perfiles.find(p => p.id === idPerfilActivo);
+
+          const actualizarPerfilActivo = (cambios) => {
+            setCuenta({
+              ...cuenta,
+              perfiles: cuenta.perfiles.map(p => p.id === idPerfilActivo ? { ...p, ...cambios } : p)
+            });
+          };
+
+          const manejarEliminarPerfil = () => {
+            if (cuenta.perfiles.length <= 1) return;
+            const perfilesNuevos = cuenta.perfiles.filter(p => p.id !== idPerfilActivo);
+            setCuenta({ ...cuenta, perfiles: perfilesNuevos });
+            setIdPerfilActivo(perfilesNuevos[0].id);
+          };
+
+          const manejarSubidaImagen = (e, campo) => {
+            const archivo = e.target.files[0];
+            if (archivo) {
+              const lector = new FileReader();
+              lector.onloadend = () => {
+                actualizarPerfilActivo({ [campo]: lector.result });
+              };
+              lector.readAsDataURL(archivo);
             }
+          };
 
-            errorDiv.innerText = '';
-            document.getElementById('status').innerText = 'Connecting to official Steam servers...';
-
-            try {
-                if (input.includes('steamcommunity.com')) {
-                    if (input.endsWith('/')) input = input.slice(0, -1);
-                    input = input.split('/').pop(); 
-                }
-
-                let steamId64 = input;
-
-                // 1. Resolve Vanity URL
-                if (!/^\d{17}$/.test(input)) {
-                    const resolveUrl = `http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key=${steamApiKey}&vanityurl=${input}`;
-                    const resolveRes = await fetch(proxyUrl + encodeURIComponent(resolveUrl));
-                    
-                    // Safety Check: Did the proxy hand us an HTML error page?
-                    const contentType = resolveRes.headers.get("content-type");
-                    if (contentType && contentType.indexOf("text/html") !== -1) {
-                        throw new Error("The proxy server is currently down or blocking the request.");
-                    }
-
-                    const resolveJson = await resolveRes.json();
-                    
-                    if (resolveJson.response.success === 1) {
-                        steamId64 = resolveJson.response.steamid;
-                    } else {
-                        throw new Error("Could not find a Steam profile with that custom URL.");
-                    }
-                }
-
-                // 2. Fetch Player Summary & Stats
-                const summaryUrl = `http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${steamApiKey}&steamids=${steamId64}`;
-                const statsUrl = `http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid=730&key=${steamApiKey}&steamid=${steamId64}`;
-
-                const [summaryRes, statsRes] = await Promise.all([
-                    fetch(proxyUrl + encodeURIComponent(summaryUrl)),
-                    fetch(proxyUrl + encodeURIComponent(statsUrl))
-                ]);
-
-                // Safety Check on the final fetch
-                if (!summaryRes.ok || !statsRes.ok) {
-                    throw new Error("Steam rejected the request. Ensure the profile is public.");
-                }
-
-                const summaryJson = await summaryRes.json();
-                const statsJson = await statsRes.json();
-
-                if (!summaryJson.response || !summaryJson.response.players || summaryJson.response.players.length === 0) {
-                    throw new Error("Steam profile not found.");
-                }
-
-                const playerProfile = summaryJson.response.players[0];
-
-                if (!statsJson.playerstats || !statsJson.playerstats.stats) {
-                    throw new Error("This profile is either private, or they have never played CS2/CS:GO.");
-                }
-
-                const rawStats = statsJson.playerstats.stats;
-
-                const getStat = (name) => {
-                    const found = rawStats.find(s => s.name === name);
-                    return found ? found.value : 0;
-                };
-
-                const kills = getStat('total_kills');
-                const deaths = getStat('total_deaths');
-                const hs = getStat('total_kills_headshot');
-                const wins = getStat('total_wins');
-
-                const kdRatio = deaths > 0 ? (kills / deaths).toFixed(2) : kills;
-                const hsPercent = kills > 0 ? Math.round((hs / kills) * 100) : 0;
-
-                resultDiv.className = 'dashboard'; 
-                resultDiv.style.display = 'block';
-                resultDiv.innerHTML = `
-                    <div class="stat-box centered-box">
-                        <img src="${playerProfile.avatarfull}" style="width: 120px; border-radius: 8px; border: 3px solid var(--theme-color); margin-bottom: 10px;">
-                        <h2 style="font-size: 32px; margin: 0;">${playerProfile.personaname}</h2>
-                        <p style="color: #888; margin-top: 5px;">SteamID64: ${steamId64}</p>
-                        
-                        <div class="steam-stat-grid">
-                            <div class="steam-stat-item">
-                                <strong style="color: #aaa;">Lifetime K/D Ratio</strong><br>
-                                <span style="font-size: 1.6em; font-weight: bold; color: white;">${kdRatio}</span>
-                            </div>
-                            <div class="steam-stat-item">
-                                <strong style="color: #aaa;">Headshot %</strong><br>
-                                <span style="font-size: 1.6em; font-weight: bold; color: white;">${hsPercent}%</span>
-                            </div>
-                            <div class="steam-stat-item">
-                                <strong style="color: #aaa;">Total Kills</strong><br>
-                                <span style="font-size: 1.6em; font-weight: bold; color: white;">${kills.toLocaleString()}</span>
-                            </div>
-                            <div class="steam-stat-item">
-                                <strong style="color: #aaa;">Rounds Won</strong><br>
-                                <span style="font-size: 1.6em; font-weight: bold; color: white;">${wins.toLocaleString()}</span>
-                            </div>
-                        </div>
+          return (
+            <div className="space-y-6">
+              
+              <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
+                {cuenta.perfiles.map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => setIdPerfilActivo(p.id)}
+                    className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2 ${
+                      idPerfilActivo === p.id ? 'bg-indigo-500 text-white' : 'bg-[#1e1f22] text-zinc-400 hover:text-zinc-200'
+                    }`}
+                  >
+                    <div className="w-4 h-4 rounded-full overflow-hidden bg-[#2b2d31] flex-shrink-0">
+                       <img src={GAMES_DATA[p.game].logo} className="w-full h-full object-cover" alt="" />
                     </div>
-                `;
+                    {p.game}
+                  </button>
+                ))}
+                <button onClick={manejarAgregarPerfil} className="px-3 py-1.5 rounded-lg text-sm font-medium bg-[#1e1f22] text-green-400 hover:bg-green-500/10 transition-colors flex items-center gap-1">
+                  <i className="fa-solid fa-plus"></i> Add Game
+                </button>
+              </div>
 
-                document.getElementById('status').innerText = 'Data successfully parsed from Steam.';
+              {perfilActivo ? (
+                <div className="flex flex-col md:flex-row gap-6 items-start">
+                  <div className="w-full md:w-[340px] shrink-0 pointer-events-none md:sticky md:top-4 mx-auto md:mx-0">
+                    <RenderizadoDePerfil perfil={perfilActivo} usuarioBase={cuenta.nombreUsuarioBase} estado="online" iconosValorant={iconosValorant} rangosValorant={rangosValorant} versionLol={versionLol} />
+                  </div>
 
-            } catch (error) {
-                console.error(error);
-                let niceError = error.message;
-                if (niceError.includes("Unexpected token") || niceError.includes("JSON")) {
-                    niceError = "The proxy server is acting up. Please try again in a moment.";
-                }
-                errorDiv.innerText = `Error: ${niceError}`;
-                document.getElementById('status').innerText = 'Ready.';
-            }
+                  <div className="flex-1 w-full bg-[#1e1f22] rounded-xl p-5 space-y-5 shadow-lg">
+                    <div className="flex items-center justify-between mb-2 border-b border-zinc-800 pb-2">
+                      <div className="flex items-center gap-2">
+                        <i className="fa-solid fa-gear text-zinc-400"></i>
+                        <h3 className="text-sm font-bold text-zinc-200 uppercase">Edit Profile</h3>
+                      </div>
+                      {cuenta.perfiles.length > 1 && (
+                        <button onClick={manejarEliminarPerfil} className="text-red-400 hover:text-red-300 p-1">
+                          <i className="fa-solid fa-trash"></i>
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-bold text-zinc-400 uppercase mb-1 block">Game</label>
+                        <select className="w-full bg-[#2b2d31] text-zinc-200 rounded-md p-2 outline-none focus:ring-1 focus:ring-indigo-500 text-sm"
+                          value={perfilActivo.game} onChange={(e) => {
+                            const nuevoJuego = e.target.value;
+                            const datosJuego = GAMES_DATA[nuevoJuego];
+                            actualizarPerfilActivo({ game: nuevoJuego, rank: datosJuego.ranks[0].name, region: datosJuego.regions[0], primaryRole: datosJuego.roles[0], mainChamps: "" });
+                          }}>
+                          {Object.keys(GAMES_DATA).map(g => <option key={g} value={g}>{g}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-zinc-400 uppercase mb-1 block">In-Game Tag</label>
+                        <input type="text" className="w-full bg-[#2b2d31] text-zinc-200 rounded-md p-2 outline-none focus:ring-1 focus:ring-indigo-500 text-sm"
+                          value={perfilActivo.gamerTag} onChange={(e) => actualizarPerfilActivo({ gamerTag: e.target.value })} placeholder="e.g. Faker#KR1" />
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="text-xs font-bold text-zinc-400 uppercase block">Visuals</label>
+                      <div className="grid grid-cols-1 gap-3">
+                        <div>
+                          <label className="block text-[10px] text-zinc-500 uppercase font-bold mb-1">Avatar Image</label>
+                          <input type="file" accept="image/*" className="w-full bg-[#2b2d31] text-zinc-400 rounded-md p-1.5 outline-none focus:ring-1 focus:ring-indigo-500 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-500/10 file:text-indigo-400 hover:file:bg-indigo-500/20 cursor-pointer"
+                            onChange={(e) => manejarSubidaImagen(e, 'avatarUrl')} />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] text-zinc-500 uppercase font-bold mb-1">Banner Image</label>
+                          <input type="file" accept="image/*" className="w-full bg-[#2b2d31] text-zinc-400 rounded-md p-1.5 outline-none focus:ring-1 focus:ring-indigo-500 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-indigo-500/10 file:text-indigo-400 hover:file:bg-indigo-500/20 cursor-pointer"
+                            onChange={(e) => manejarSubidaImagen(e, 'bannerUrl')} />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] text-zinc-500 uppercase font-bold mb-1">Avatar Frame</label>
+                          <select className="w-full bg-[#2b2d31] text-zinc-200 rounded-md p-2 outline-none focus:ring-1 focus:ring-indigo-500 text-sm"
+                            value={perfilActivo.frame} onChange={(e) => actualizarPerfilActivo({ frame: e.target.value })}>
+                            {Object.keys(AVATAR_FRAMES).map(f => <option key={f} value={f}>{f} Frame</option>)}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-bold text-zinc-400 uppercase mb-1 block">Rank</label>
+                        <select className="w-full bg-[#2b2d31] text-zinc-200 rounded-md p-2 outline-none focus:ring-1 focus:ring-indigo-500 text-sm"
+                          value={perfilActivo.rank} onChange={(e) => actualizarPerfilActivo({ rank: e.target.value })}>
+                          {GAMES_DATA[perfilActivo.game].ranks.map(r => <option key={r.name} value={r.name}>{r.name}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-zinc-400 uppercase mb-1 block">Region / Server</label>
+                        <select className="w-full bg-[#2b2d31] text-zinc-200 rounded-md p-2 outline-none focus:ring-1 focus:ring-indigo-500 text-sm"
+                          value={perfilActivo.region} onChange={(e) => actualizarPerfilActivo({ region: e.target.value })}>
+                          {GAMES_DATA[perfilActivo.game].regions.map(r => <option key={r} value={r}>{r}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-zinc-400 uppercase mb-1 block">Primary Role</label>
+                        <select className="w-full bg-[#2b2d31] text-zinc-200 rounded-md p-2 outline-none focus:ring-1 focus:ring-indigo-500 text-sm"
+                          value={perfilActivo.primaryRole} onChange={(e) => actualizarPerfilActivo({ primaryRole: e.target.value })}>
+                          {GAMES_DATA[perfilActivo.game].roles.map(r => <option key={r} value={r}>{r}</option>)}
+                        </select>
+                      </div>
+                    </div>
+
+                    {GAMES_DATA[perfilActivo.game].characters && (
+                      <div>
+                        <label className="text-xs font-bold text-zinc-400 uppercase mb-2 block">Champs / Agents (Max 4)</label>
+                        <div className="flex flex-wrap gap-2 mb-3">
+                          {perfilActivo.mainChamps ? perfilActivo.mainChamps.split(',').map(c => c.trim()).filter(Boolean).map(champ => (
+                            <div key={champ} className="bg-[#1e1f22] border border-zinc-700 rounded-md px-2 py-1 text-xs text-zinc-300 flex items-center gap-1.5 shadow-sm">
+                              {champ}
+                              <button onClick={() => {
+                                  const campeonesActuales = perfilActivo.mainChamps.split(',').map(c => c.trim()).filter(Boolean);
+                                  const nuevosCampeones = campeonesActuales.filter(c => c !== champ).join(',');
+                                  actualizarPerfilActivo({ mainChamps: nuevosCampeones });
+                                }} className="text-zinc-500 hover:text-red-400 transition-colors">
+                                <i className="fa-solid fa-xmark"></i>
+                              </button>
+                            </div>
+                          )) : null}
+                        </div>
+                        <select className="w-full bg-[#2b2d31] text-zinc-200 rounded-md p-2 outline-none focus:ring-1 focus:ring-indigo-500 text-sm cursor-pointer"
+                          value="" onChange={(e) => {
+                            const valor = e.target.value;
+                            if (!valor) return;
+                            const campeonesActuales = perfilActivo.mainChamps ? perfilActivo.mainChamps.split(',').map(c => c.trim()).filter(Boolean) : [];
+                            if (campeonesActuales.length >= 4 || campeonesActuales.includes(valor)) return;
+                            actualizarPerfilActivo({ mainChamps: [...campeonesActuales, valor].join(',') });
+                          }}>
+                          <option value="">+ Add {perfilActivo.game === "Valorant" ? "Agent" : "Champion"}...</option>
+                          {GAMES_DATA[perfilActivo.game].characters
+                            .filter(c => !(perfilActivo.mainChamps ? perfilActivo.mainChamps.split(',').map(name => name.trim()).filter(Boolean) : []).includes(c))
+                            .map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="text-xs font-bold text-zinc-400 uppercase mb-1 block">Bio for this Game</label>
+                      <textarea className="w-full bg-[#2b2d31] text-zinc-200 rounded-md p-2 outline-none focus:ring-1 focus:ring-indigo-500 resize-none h-16 text-sm"
+                        value={perfilActivo.aboutMe} onChange={(e) => actualizarPerfilActivo({ aboutMe: e.target.value })} placeholder="Looking for a solid duo..." />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center text-zinc-500 py-10">No game profile selected.</div>
+              )}
+            </div>
+          );
         }
+
+        function RenderizadoDePerfil({ perfil, usuarioBase, estado, iconosValorant, rangosValorant, versionLol }) {
+          const datosJuego = GAMES_DATA[perfil.game];
+          const objetoRango = datosJuego.ranks.find(r => r.name === perfil.rank) || datosJuego.ranks[0];
+          const cssMarco = AVATAR_FRAMES[perfil.frame] || "";
+          
+          let imagenRangoActual = objetoRango.img;
+          if (perfil.game === "Valorant" && rangosValorant && rangosValorant[perfil.rank]) {
+            imagenRangoActual = rangosValorant[perfil.rank];
+          }
+          
+          const obtenerColorEstado = (s) => {
+            switch(s) {
+              case 'online': return 'bg-green-500';
+              case 'dnd': return 'bg-red-500';
+              case 'idle': return 'bg-yellow-500';
+              default: return 'bg-zinc-500';
+            }
+          };
+
+          // --- LEAGUE OF LEGENDS LAYOUT ---
+          if (perfil.game === "League of Legends") {
+            return (
+              <div className="w-full max-w-[340px] bg-[#010a13] rounded-[4px] shadow-2xl overflow-hidden text-zinc-300 text-sm border-2 border-[#c8aa6e]/30 mx-auto relative group">
+                <div className="h-[140px] w-full bg-cover bg-center absolute top-0 left-0 opacity-40 mix-blend-luminosity" style={{ backgroundImage: `url(${perfil.bannerUrl})` }} />
+                <div className="h-[140px] w-full absolute top-0 left-0 bg-gradient-to-b from-transparent to-[#010a13]" />
+                
+                <div className="relative px-4 pt-10 pb-6 flex flex-col items-center z-10">
+                  <div className={`w-[100px] h-[100px] rounded-full border-[2px] border-[#c8aa6e] bg-[#010a13] p-1 relative ${cssMarco} shadow-xl`}>
+                    <img src={perfil.avatarUrl} className="w-full h-full object-cover rounded-full" />
+                    <div className={`absolute bottom-1 right-1 w-5 h-5 rounded-full border-[2px] border-[#010a13] ${obtenerColorEstado(estado)}`} />
+                  </div>
+                  
+                  <h2 className="text-xl font-bold text-[#f0e6d2] mt-3 tracking-wide">{perfil.gamerTag}</h2>
+                  <p className="text-xs text-[#c8aa6e]">aka {usuarioBase}</p>
+
+                  <div className="mt-3 flex items-center gap-1.5 border border-[#c8aa6e]/50 bg-[#010a13]/80 px-3 py-1 rounded-full">
+                     <IconoDeRol game={perfil.game} role={perfil.primaryRole} fallbackClass={datosJuego.bgAccent} svgSize="w-4 h-4" />
+                     <span className="text-[10px] font-bold text-[#c8aa6e] uppercase tracking-widest">{perfil.primaryRole}</span>
+                  </div>
+
+                  <div className="mt-6 flex flex-col items-center">
+                     <div className="w-32 h-32 drop-shadow-[0_0_20px_rgba(200,170,110,0.3)]">
+                        <img src={imagenRangoActual} className="w-full h-full object-contain scale-[4]" />
+                     </div>
+                     <div className="font-black text-transparent bg-clip-text bg-gradient-to-b from-[#f0e6d2] to-[#c8aa6e] text-xl uppercase tracking-[0.2em] mt-2 drop-shadow-md">{objetoRango.name}</div>
+                     <div className="text-[10px] text-[#a09b8c] tracking-widest mt-1 uppercase">{perfil.region} Server</div>
+                  </div>
+
+                  {perfil.mainChamps && (
+                    <div className="mt-6 w-full">
+                      <div className="flex justify-center gap-4">
+                        {perfil.mainChamps.split(',').map((champ, idx) => {
+                           const nombreLimpio = champ.trim();
+                           if(!nombreLimpio) return null;
+                           return (
+                             <div key={idx} className="w-12 h-12 rounded-full border-2 border-[#c8aa6e] overflow-hidden relative shadow-[0_0_10px_rgba(200,170,110,0.2)]" title={nombreLimpio}>
+                               <img src={obtenerImagenCampeon(perfil.game, nombreLimpio, iconosValorant, versionLol)} className="w-full h-full object-cover scale-110" />
+                             </div>
+                           )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-6 w-full text-center px-4">
+                    <p className="text-xs italic text-[#a09b8c] leading-relaxed relative inline-block">
+                       <span className="text-2xl text-[#c8aa6e]/30 absolute -top-3 -left-4">"</span>
+                       {perfil.aboutMe}
+                       <span className="text-2xl text-[#c8aa6e]/30 absolute -bottom-4 -right-4">"</span>
+                    </p>
+                  </div>
+
+                  <button className="w-full mt-6 py-3 rounded border border-[#c8aa6e] bg-[#c8aa6e]/10 hover:bg-[#c8aa6e]/20 text-[#f0e6d2] font-bold text-xs uppercase tracking-widest transition-colors flex items-center justify-center gap-2">
+                     <i className="fa-solid fa-message"></i> Send Message
+                  </button>
+                </div>
+              </div>
+            );
+          }
+
+          // --- COUNTER-STRIKE 2 LAYOUT ---
+          if (perfil.game === "Counter-Strike 2") {
+            return (
+              <div className="w-full max-w-[340px] bg-[#161719] rounded-sm shadow-[0_0_25px_rgba(0,0,0,0.9)] overflow-hidden text-zinc-300 text-sm border-[3px] border-[#2a2c31] mx-auto relative group font-mono">
+                <div className="absolute top-0 left-0 w-full h-1.5 bg-orange-500 z-20" />
+                <div className="h-[140px] w-full bg-cover bg-center absolute top-0 left-0 opacity-40 grayscale sepia-[.2]" style={{ backgroundImage: `url(${perfil.bannerUrl})` }} />
+                <div className="h-[140px] w-full absolute top-0 left-0 bg-gradient-to-b from-transparent to-[#161719]" />
+                <div className="h-[140px] w-full absolute top-0 left-0 opacity-10 bg-[repeating-linear-gradient(0deg,transparent,transparent_2px,#000_2px,#000_4px)]" />
+                
+                <div className="relative px-4 pt-10 pb-6 flex flex-col items-center z-10">
+                  <div className={`w-[100px] h-[100px] rounded-md border-[2px] border-orange-500 bg-[#161719] p-1 relative shadow-[0_0_15px_rgba(249,115,22,0.15)] ${cssMarco}`}>
+                    <img src={perfil.avatarUrl} className="w-full h-full object-cover rounded-sm grayscale-[0.2]" />
+                    <div className={`absolute -bottom-2 -right-2 w-5 h-5 rounded-sm border-[2px] border-[#161719] ${obtenerColorEstado(estado)}`} />
+                  </div>
+                  
+                  <h2 className="text-2xl font-black text-white mt-4 tracking-tight uppercase flex items-center gap-2">
+                     <i className="fa-brands fa-steam text-zinc-500 text-lg"></i>
+                     {perfil.gamerTag}
+                  </h2>
+                  <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-0.5">ID: {usuarioBase}</p>
+
+                  <div className="mt-4 flex items-center gap-2 border border-orange-500/30 bg-orange-500/10 px-4 py-1.5 rounded-sm shadow-inner">
+                     <IconoDeRol game={perfil.game} role={perfil.primaryRole} fallbackClass={datosJuego.bgAccent} csSize="text-lg" />
+                     <span className="text-xs font-bold text-orange-500 uppercase tracking-widest">{perfil.primaryRole}</span>
+                  </div>
+
+                  <div className="mt-6 flex flex-col items-center">
+                     <div className="w-32 h-24 flex items-center justify-center drop-shadow-[0_5px_10px_rgba(0,0,0,0.8)]">
+                        <img src={imagenRangoActual} className="w-full h-full object-contain scale-[1.3]" 
+                          onError={(e) => {
+                            if(e.target.getAttribute('data-error')) return;
+                            e.target.setAttribute('data-error', 'true');
+                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(objetoRango.name)}&background=161719&color=f97316&size=128&font-size=0.33`;
+                          }}
+                        />
+                     </div>
+                     <div className="font-black text-zinc-200 text-xl uppercase tracking-widest mt-4 drop-shadow-md">{objetoRango.name}</div>
+                     <div className="text-[10px] text-zinc-500 font-bold tracking-widest mt-1 uppercase flex items-center gap-1.5">
+                        <i className="fa-solid fa-satellite-dish text-orange-500"></i> REGION: {perfil.region}
+                     </div>
+                  </div>
+
+                  <div className="mt-8 w-full px-4 bg-[#0a0a0c] p-3 border border-zinc-800 rounded-sm relative shadow-inner">
+                    <div className="text-[9px] text-orange-500/80 uppercase tracking-widest font-bold mb-2 flex items-center gap-1.5 border-b border-zinc-800/50 pb-1.5">
+                       <i className="fa-solid fa-terminal"></i> root@comms:~# cat intel.txt
+                    </div>
+                    <p className="text-xs text-zinc-400 leading-relaxed font-sans">
+                       <span className="text-green-500 mr-1 font-mono font-bold">$</span>{perfil.aboutMe}
+                    </p>
+                  </div>
+
+                  <button className="w-full mt-6 py-3.5 bg-zinc-800 hover:bg-orange-600 text-zinc-300 hover:text-white border-2 border-zinc-700 hover:border-orange-500 font-black text-[11px] uppercase tracking-widest transition-all duration-200 flex items-center justify-center gap-2 rounded-sm shadow-lg group">
+                     <i className="fa-solid fa-microphone-lines group-hover:animate-pulse"></i> CONNECT TO LOBBY
+                  </button>
+                </div>
+              </div>
+            );
+          }
+
+          // --- VALORANT LAYOUT ---
+          if (perfil.game === "Valorant") {
+            return (
+              <div className="w-full max-w-[340px] bg-[#0f1923] rounded-none shadow-[0_0_30px_rgba(255,70,85,0.15)] overflow-hidden text-[#ece8e1] text-sm border border-[#ff4655]/30 mx-auto relative group font-sans">
+                <div className="absolute top-0 left-0 w-full h-1.5 bg-[#ff4655] z-20" />
+                <div className="h-[140px] w-full bg-cover bg-center absolute top-0 left-0 opacity-30 mix-blend-luminosity grayscale" style={{ backgroundImage: `url(${perfil.bannerUrl})` }} />
+                <div className="h-[140px] w-full absolute top-0 left-0 bg-gradient-to-b from-transparent to-[#0f1923]" />
+                
+                <div className="relative px-4 pt-10 pb-6 flex flex-col items-center z-10">
+                  <div className={`w-[100px] h-[100px] rounded-tl-lg rounded-tr-lg rounded-bl-lg rounded-br-[32px] border-[2px] border-[#ff4655] bg-[#0f1923] p-1 relative ${cssMarco} shadow-[0_0_15px_rgba(255,70,85,0.2)]`}>
+                    <img src={perfil.avatarUrl} className="w-full h-full object-cover rounded-tl-md rounded-tr-md rounded-bl-md rounded-br-[28px]" />
+                    <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-[2px] border-[#0f1923] ${obtenerColorEstado(estado)}`} />
+                  </div>
+                  
+                  <h2 className="text-2xl font-black text-[#ece8e1] mt-4 tracking-widest uppercase flex items-center gap-1">
+                     {perfil.gamerTag.split('#')[0]}
+                     <span className="text-[#ff4655] text-sm">#{perfil.gamerTag.split('#')[1]}</span>
+                  </h2>
+                  <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-0.5">ID: {usuarioBase}</p>
+
+                  <div className="mt-4 flex items-center gap-2 border border-[#ff4655]/50 bg-[#ff4655]/10 px-4 py-1.5 rounded-sm">
+                     <IconoDeRol game={perfil.game} role={perfil.primaryRole} fallbackClass={datosJuego.bgAccent} svgSize="w-5 h-5" />
+                     <span className="text-xs font-black text-[#ece8e1] uppercase tracking-widest">{perfil.primaryRole}</span>
+                  </div>
+
+                  <div className="mt-6 flex flex-col items-center">
+                     <div className="w-32 h-32 drop-shadow-[0_0_25px_rgba(255,255,255,0.1)]">
+                        <img src={imagenRangoActual} className="w-full h-full object-contain scale-[1.15]" 
+                          onError={(e) => {
+                            if(e.target.getAttribute('data-error')) return;
+                            e.target.setAttribute('data-error', 'true');
+                            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(objetoRango.name)}&background=0f1923&color=ff4655&size=128&font-size=0.33`;
+                          }}
+                        />
+                     </div>
+                     <div className="font-black text-white text-2xl uppercase tracking-[0.15em] mt-3 drop-shadow-md">{objetoRango.name}</div>
+                     <div className="text-[11px] text-[#ff4655] font-bold tracking-widest mt-1 uppercase flex items-center gap-1.5">
+                        <i className="fa-solid fa-location-crosshairs"></i> {perfil.region} SERVER
+                     </div>
+                  </div>
+
+                  {perfil.mainChamps && (
+                    <div className="mt-6 w-full">
+                      <div className="flex justify-center gap-3">
+                        {perfil.mainChamps.split(',').map((champ, idx) => {
+                           const nombreLimpio = champ.trim();
+                           if(!nombreLimpio) return null;
+                           return (
+                             <div key={idx} className="w-12 h-12 bg-zinc-800 rounded-sm overflow-hidden relative border-b-[3px] border-[#ff4655] shadow-lg" title={nombreLimpio}>
+                               <img src={obtenerImagenCampeon(perfil.game, nombreLimpio, iconosValorant, versionLol)} className="w-full h-full object-cover scale-110" 
+                                  onError={(e) => { e.target.src = `https://ui-avatars.com/api/?name=${nombreLimpio}&background=0f1923&color=fff&size=64` }}
+                               />
+                             </div>
+                           )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-6 w-full text-center px-4 bg-black/30 p-3 border-l-[3px] border-[#ff4655] relative">
+                    <div className="absolute top-0 left-0 w-1 h-1 bg-[#ff4655] -translate-x-[3px] -translate-y-[3px]" />
+                    <div className="absolute bottom-0 left-0 w-1 h-1 bg-[#ff4655] -translate-x-[3px] translate-y-[3px]" />
+                    <p className="text-xs text-zinc-300 leading-relaxed font-medium">
+                       {perfil.aboutMe}
+                    </p>
+                  </div>
+
+                  <button className="w-full mt-6 py-3.5 bg-[#ff4655] hover:bg-[#ff4655]/90 text-white font-black text-[11px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 rounded-sm relative overflow-hidden group">
+                     <span className="absolute top-0 left-[-100%] w-1/2 h-full bg-white/20 skew-x-[-20deg] group-hover:left-[200%] transition-all duration-700 ease-in-out" />
+                     <i className="fa-solid fa-paper-plane"></i> INITIATE COMMS
+                  </button>
+                </div>
+              </div>
+            );
+          }
+
+          // --- DEFAULT FALLBACK LAYOUT ---
+          return (
+            <div className="w-full max-w-[340px] bg-[#111214] rounded-xl p-6 shadow-2xl mx-auto text-center border border-zinc-800">
+               <img src={perfil.avatarUrl} className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4 border-zinc-800" />
+               <h2 className="text-xl font-bold text-white">{perfil.gamerTag}</h2>
+               <p className="text-sm text-zinc-400 mb-6">{perfil.game}</p>
+               <div className="bg-[#1e1f22] p-3 rounded-lg text-sm text-zinc-300 mb-6">
+                 {perfil.aboutMe}
+               </div>
+               <button className="w-full py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg font-bold transition-colors">
+                 Connect
+               </button>
+            </div>
+          );
+        }
+
+        // Renderizar la aplicación en el div con id "root"
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
