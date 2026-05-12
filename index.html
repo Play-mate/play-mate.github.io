@@ -29,7 +29,6 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // --- Configuración de Juegos e Imágenes ---
         const GAMES_DATA = {
           "Valorant": {
             logo: "https://logo.clearbit.com/playvalorant.com",
@@ -94,7 +93,6 @@
           "Blood Moon": "ring-[3px] ring-red-600 shadow-[0_0_20px_rgba(220,38,38,0.8)] border-dashed"
         };
 
-        // --- Mock Data for Discovery ---
         const MOCK_PROFILES = [
             {
                 id: "mock_1", game: "League of Legends", gamerTag: "dasdsdad#1234", avatarUrl: "https://ui-avatars.com/api/?name=D&background=2b2d31&color=fff&size=128", bannerUrl: "", frame: "None", rank: "Iron", region: "NA", primaryRole: "Top", mainChamps: "", aboutMe: "Ready to grind.", badges: []
@@ -107,7 +105,6 @@
             }
         ];
 
-        // --- SVGs y Utilidades (Reducidos por brevedad visual, funcionan igual) ---
         const IconoDeRol = ({ game, role, fallbackClass, svgSize = "w-10 h-10", csSize = "text-3xl" }) => {
           const svgClasses = `${svgSize} object-contain drop-shadow-md`; 
           const valoColor = "#ece8e1"; 
@@ -160,16 +157,14 @@
           return `https://ui-avatars.com/api/?name=${name}&background=2b2d31&color=fff&size=64`;
         };
 
-        // --- Componente Principal ---
         function App() {
           const [iconosValorant, setIconosValorant] = useState({});
           const [rangosValorant, setRangosValorant] = useState({});
           const [versionLol, setVersionLol] = useState("14.8.1");
           
-          // Navigation State
-          const [vistaActual, setVistaActual] = useState('discover'); // 'discover', 'chat', 'editor'
-          const [chatActivo, setChatActivo] = useState(null); // id del perfil con el que se chatea
-          const [historialChats, setHistorialChats] = useState({}); // { mock_1: [{text, isMine}] }
+          const [vistaActual, setVistaActual] = useState('discover'); 
+          const [chatActivo, setChatActivo] = useState(null); 
+          const [historialChats, setHistorialChats] = useState({}); 
 
           const [cuenta, setCuenta] = useState({
             nombreUsuarioBase: "NewUser123",
@@ -211,7 +206,6 @@
               .then(data => setVersionLol(data[0])).catch(err => console.error(err));
           }, []);
 
-          // Navigation Handlers
           const handleOpenChat = (perfil) => {
               setChatActivo(perfil);
               setVistaActual('chat');
@@ -228,7 +222,6 @@
             <div className="min-h-screen bg-[#1e1f22] text-slate-200 font-sans flex justify-center selection:bg-indigo-500/30">
               <div className="w-full max-w-5xl bg-[#2b2d31] min-h-screen flex flex-col relative shadow-2xl overflow-hidden border-x border-[#1e1f22]">
                 
-                {/* Header with Navigation */}
                 <header className="h-14 border-b border-zinc-800 flex items-center justify-between px-4 shrink-0 bg-[#2b2d31] z-20">
                   <div className="flex items-center gap-8">
                       <div className="flex items-center gap-2">
@@ -243,7 +236,6 @@
                   </div>
                 </header>
 
-                {/* Contenido Principal */}
                 <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 relative hide-scrollbar">
                   {vistaActual === 'editor' && (
                       <EditorMultiplesPerfiles cuenta={cuenta} setCuenta={setCuenta} iconosValorant={iconosValorant} rangosValorant={rangosValorant} versionLol={versionLol} />
@@ -262,7 +254,6 @@
                   )}
                 </main>
 
-                {/* Mobile Navigation Footer (visible only on small screens) */}
                 <div className="sm:hidden flex border-t border-zinc-800 bg-[#2b2d31] p-3 justify-around z-20">
                     <button onClick={() => setVistaActual('discover')} className={`flex flex-col items-center ${vistaActual === 'discover' ? 'text-indigo-400' : 'text-zinc-400'}`}><i className="fa-solid fa-compass mb-1"></i><span className="text-[10px] font-bold">Discover</span></button>
                     <button onClick={() => setVistaActual('chat')} className={`flex flex-col items-center ${vistaActual === 'chat' ? 'text-indigo-400' : 'text-zinc-400'}`}><i className="fa-solid fa-message mb-1"></i><span className="text-[10px] font-bold">Chats</span></button>
@@ -274,8 +265,6 @@
           );
         }
 
-
-        // --- VISTA: DESCUBRIR (CAROUSEL) ---
         function DescubrirPerfiles({ perfiles, iconosValorant, rangosValorant, versionLol, onSendMessage }) {
             const [indice, setIndice] = useState(0);
 
@@ -289,9 +278,8 @@
             };
 
             return (
-                <div className="flex gap-4 sm:gap-12 justify-center items-center min-h-[500px] pt-4 sm:pt-10">
-                    {/* Active Profile */}
-                    <div className="relative z-10 transition-transform duration-300 transform scale-100">
+                <div className="flex gap-4 sm:gap-10 justify-center items-start min-h-[500px] pt-4 sm:pt-10">
+                    <div className="relative z-10 w-full max-w-[340px]">
                         <RenderizadoDePerfil 
                             perfil={perfilActual} 
                             usuarioBase={perfilActual.gamerTag.split('#')[0]} 
@@ -303,10 +291,9 @@
                         />
                     </div>
 
-                    {/* Next Profile Preview (Dimmed with Arrow Overlay) */}
                     {perfilSiguiente && (
-                        <div className="hidden sm:block relative transition-all duration-300">
-                             <div className="opacity-30 scale-90 blur-[1px] pointer-events-none">
+                        <div className="hidden sm:block relative w-full max-w-[340px] transition-all duration-300">
+                             <div className="opacity-40 pointer-events-none">
                                 <RenderizadoDePerfil 
                                     perfil={perfilSiguiente} 
                                     usuarioBase={perfilSiguiente.gamerTag.split('#')[0]} 
@@ -316,7 +303,6 @@
                                     versionLol={versionLol} 
                                 />
                              </div>
-                             {/* Arrow Button Overlay */}
                              <button 
                                 onClick={(e) => { e.stopPropagation(); handleNext(); }} 
                                 className="absolute inset-0 m-auto w-16 h-16 bg-zinc-900/90 rounded-full flex items-center justify-center text-white text-3xl hover:bg-zinc-800 hover:scale-110 transition-all z-50 shadow-2xl border border-zinc-700">
@@ -328,12 +314,10 @@
             );
         }
 
-        // --- VISTA: CHAT ---
         function VistaChat({ perfil, mensajes, onEnviar, onVolver }) {
             const [texto, setTexto] = useState("");
             const mensajesEndRef = React.useRef(null);
 
-            // Auto-scroll al último mensaje
             useEffect(() => {
                 mensajesEndRef.current?.scrollIntoView({ behavior: "smooth" });
             }, [mensajes]);
@@ -346,7 +330,6 @@
 
             return (
                 <div className="flex flex-col h-[calc(100vh-160px)] sm:h-[600px] w-full max-w-2xl mx-auto bg-[#1e1f22] rounded-xl border border-zinc-800 overflow-hidden shadow-2xl mt-2 sm:mt-8">
-                    {/* Header Chat */}
                     <div className="px-5 py-4 border-b border-zinc-800 bg-[#2b2d31] flex items-center gap-4">
                         <button onClick={onVolver} className="text-zinc-400 hover:text-white mr-2 transition-colors">
                            <i className="fa-solid fa-arrow-left text-lg"></i>
@@ -358,7 +341,6 @@
                         <h3 className="text-white font-bold text-lg">{perfil.gamerTag}</h3>
                     </div>
                     
-                    {/* Area de Mensajes */}
                     <div className="flex-1 overflow-y-auto p-6 space-y-6">
                         {mensajes.length === 0 ? (
                             <div className="text-center text-zinc-500 mt-10 text-sm">
@@ -376,7 +358,6 @@
                         <div ref={mensajesEndRef} />
                     </div>
 
-                    {/* Input Bottom Bar (Como en la foto) */}
                     <div className="p-4 bg-[#2b2d31] border-t border-zinc-800">
                         <div className="flex items-center gap-3 bg-[#1e1f22] rounded px-4 py-3 border border-zinc-700 focus-within:border-indigo-500 transition-colors">
                             <input
@@ -396,10 +377,7 @@
             )
         }
 
-        // --- VISTA: EDITOR (El original, ligeramente adaptado para caber) ---
         function EditorMultiplesPerfiles({ cuenta, setCuenta, iconosValorant, rangosValorant, versionLol }) {
-           // ... (Same exact content as your original EditorMultiplesPerfiles function. See full code below for exact merge)
-           // Only change: ensuring we map the components properly. For brevity in explanation, assume this is identical to your original code.
            const [idPerfilActivo, setIdPerfilActivo] = useState(cuenta.perfiles[0]?.id || null);
 
           const manejarAgregarPerfil = () => {
@@ -456,7 +434,6 @@
                     <RenderizadoDePerfil perfil={perfilActivo} usuarioBase={cuenta.nombreUsuarioBase} estado="online" iconosValorant={iconosValorant} rangosValorant={rangosValorant} versionLol={versionLol} onSendMessage={() => {}} />
                   </div>
 
-                  {/* Formularios de edición... */}
                   <div className="flex-1 w-full bg-[#1e1f22] rounded-xl p-5 space-y-5 shadow-lg">
                     <div className="flex items-center justify-between mb-2 border-b border-zinc-800 pb-2">
                       <div className="flex items-center gap-2">
@@ -520,8 +497,6 @@
           );
         }
 
-        // --- Renderizado Visual del Perfil ---
-        // NOTE: Se agregó la propiedad `onSendMessage` a todos los botones inferiores
         function RenderizadoDePerfil({ perfil, usuarioBase, estado, iconosValorant, rangosValorant, versionLol, onSendMessage }) {
           const datosJuego = GAMES_DATA[perfil.game];
           const objetoRango = datosJuego.ranks.find(r => r.name === perfil.rank) || datosJuego.ranks[0];
