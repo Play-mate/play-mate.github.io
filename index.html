@@ -21,6 +21,25 @@
         .hide-scrollbar::-webkit-scrollbar {
             display: none;
         }
+
+        /* --- Custom Scale-to-Fit for Large Screens --- */
+        @media (min-width: 1024px) {
+            .scale-wrapper {
+                height: 100vh !important;
+                overflow: hidden !important;
+                align-items: center !important;
+            }
+            .scale-container {
+                height: 900px !important;
+                min-height: 900px !important;
+                max-height: 900px !important;
+                transform-origin: center center;
+                /* If viewport height is less than 900px, scale the app down proportionally */
+                transform: scale(min(1, calc(100vh / 900)));
+                border-radius: 12px;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            }
+        }
     </style>
 </head>
 <body>
@@ -219,8 +238,11 @@
           };
 
           return (
-            <div className="min-h-screen bg-[#1e1f22] text-slate-200 font-sans flex justify-center selection:bg-indigo-500/30">
-              <div className="w-full max-w-5xl bg-[#2b2d31] min-h-screen flex flex-col relative shadow-2xl overflow-hidden border-x border-[#1e1f22]">
+            /* NOTE: Added "scale-wrapper" class here */
+            <div className="min-h-screen bg-[#1e1f22] text-slate-200 font-sans flex justify-center selection:bg-indigo-500/30 scale-wrapper">
+              
+              /* NOTE: Added "scale-container" class here */
+              <div className="w-full max-w-5xl bg-[#2b2d31] min-h-screen flex flex-col relative shadow-2xl overflow-hidden border-x border-[#1e1f22] scale-container">
                 
                 <header className="h-14 border-b border-zinc-800 flex items-center justify-between px-4 shrink-0 bg-[#2b2d31] z-20">
                   <div className="flex items-center gap-8">
@@ -236,22 +258,24 @@
                   </div>
                 </header>
 
-                <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 relative hide-scrollbar">
-                  {vistaActual === 'editor' && (
-                      <EditorMultiplesPerfiles cuenta={cuenta} setCuenta={setCuenta} iconosValorant={iconosValorant} rangosValorant={rangosValorant} versionLol={versionLol} />
-                  )}
-                  {vistaActual === 'discover' && (
-                      <DescubrirPerfiles perfiles={MOCK_PROFILES} iconosValorant={iconosValorant} rangosValorant={rangosValorant} versionLol={versionLol} onSendMessage={handleOpenChat} />
-                  )}
-                  {vistaActual === 'chat' && chatActivo && (
-                      <VistaChat perfil={chatActivo} mensajes={historialChats[chatActivo.id] || []} onEnviar={handleEnviarMensaje} onVolver={() => setVistaActual('discover')} />
-                  )}
-                  {vistaActual === 'chat' && !chatActivo && (
-                      <div className="flex flex-col items-center justify-center h-full text-zinc-500 gap-4 mt-20">
-                          <i className="fa-solid fa-messages text-4xl"></i>
-                          <p>Select a profile from Discover to start chatting.</p>
-                      </div>
-                  )}
+                <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 relative hide-scrollbar flex justify-center items-center">
+                  <div className="w-full h-full max-w-5xl">
+                    {vistaActual === 'editor' && (
+                        <EditorMultiplesPerfiles cuenta={cuenta} setCuenta={setCuenta} iconosValorant={iconosValorant} rangosValorant={rangosValorant} versionLol={versionLol} />
+                    )}
+                    {vistaActual === 'discover' && (
+                        <DescubrirPerfiles perfiles={MOCK_PROFILES} iconosValorant={iconosValorant} rangosValorant={rangosValorant} versionLol={versionLol} onSendMessage={handleOpenChat} />
+                    )}
+                    {vistaActual === 'chat' && chatActivo && (
+                        <VistaChat perfil={chatActivo} mensajes={historialChats[chatActivo.id] || []} onEnviar={handleEnviarMensaje} onVolver={() => setVistaActual('discover')} />
+                    )}
+                    {vistaActual === 'chat' && !chatActivo && (
+                        <div className="flex flex-col items-center justify-center h-full text-zinc-500 gap-4 mt-20">
+                            <i className="fa-solid fa-messages text-4xl"></i>
+                            <p>Select a profile from Discover to start chatting.</p>
+                        </div>
+                    )}
+                  </div>
                 </main>
 
                 <div className="sm:hidden flex border-t border-zinc-800 bg-[#2b2d31] p-3 justify-around z-20">
@@ -278,7 +302,7 @@
             };
 
             return (
-                <div className="flex gap-4 sm:gap-10 justify-center items-start min-h-[500px] pt-4 sm:pt-10">
+                <div className="flex gap-4 sm:gap-10 justify-center items-center h-full pt-4 sm:pt-0">
                     <div className="relative z-10 w-full max-w-[340px]">
                         <RenderizadoDePerfil 
                             perfil={perfilActual} 
@@ -329,7 +353,7 @@
             };
 
             return (
-                <div className="flex flex-col h-[calc(100vh-160px)] sm:h-[600px] w-full max-w-2xl mx-auto bg-[#1e1f22] rounded-xl border border-zinc-800 overflow-hidden shadow-2xl mt-2 sm:mt-8">
+                <div className="flex flex-col h-full lg:h-[800px] w-full max-w-2xl mx-auto bg-[#1e1f22] rounded-xl border border-zinc-800 overflow-hidden shadow-2xl mt-2 lg:mt-6">
                     <div className="px-5 py-4 border-b border-zinc-800 bg-[#2b2d31] flex items-center gap-4">
                         <button onClick={onVolver} className="text-zinc-400 hover:text-white mr-2 transition-colors">
                            <i className="fa-solid fa-arrow-left text-lg"></i>
@@ -415,7 +439,7 @@
           };
 
           return (
-            <div className="space-y-6 max-w-5xl mx-auto pb-10">
+            <div className="space-y-6 w-full max-w-5xl mx-auto pb-10">
               <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-2">
                 {cuenta.perfiles.map(p => (
                   <button key={p.id} onClick={() => setIdPerfilActivo(p.id)} className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-2 ${idPerfilActivo === p.id ? 'bg-indigo-500 text-white' : 'bg-[#1e1f22] text-zinc-400 hover:text-zinc-200'}`}>
@@ -429,8 +453,8 @@
               </div>
 
               {perfilActivo ? (
-                <div className="flex flex-col md:flex-row gap-6 items-start">
-                  <div className="w-full md:w-[340px] shrink-0 pointer-events-none md:sticky md:top-4 mx-auto md:mx-0">
+                <div className="flex flex-col lg:flex-row gap-6 items-start">
+                  <div className="w-full lg:w-[340px] shrink-0 pointer-events-none lg:sticky lg:top-4 mx-auto lg:mx-0">
                     <RenderizadoDePerfil perfil={perfilActivo} usuarioBase={cuenta.nombreUsuarioBase} estado="online" iconosValorant={iconosValorant} rangosValorant={rangosValorant} versionLol={versionLol} onSendMessage={() => {}} />
                   </div>
 
